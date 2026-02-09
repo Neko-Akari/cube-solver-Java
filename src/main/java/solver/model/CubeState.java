@@ -1,5 +1,4 @@
 package solver.model;
-import java.util.Arrays;
 
 /**
  * Immutable 2x2 cube state using corner permutation (cp) and corner orientation (co).
@@ -13,7 +12,7 @@ import java.util.Arrays;
  */
 public final class CubeState {
 
-    //cp[pos] = which corner cubie is at position pos
+    // cp[pos] = which corner cubie is at position pos
     private final byte[] cp; // length 8
     // co[pos] = orientation of corner cubie at position pos (0..2)
     private final byte[] co; // length 8
@@ -46,13 +45,37 @@ public final class CubeState {
     /** Whether this state is solved. */
     public boolean isSolved() {
         for (byte i = 0; i < 8; i++) {
-            if (cp[i] != (byte) i) return false;
+            if (cp[i] != i) return false;
             if (co[i] != 0) return false;
         }
         return true;
     }
 
+    /** Applies one clockwise quarter-turn of the given face. */
     private CubeState applyQuarter(Move.Face face) {
-        throw new UnsupportedOperationException("applyQuarter() not implemented yet");
+        return switch (face) {
+            case U -> applyUQuarter();
+            case R, F -> throw new UnsupportedOperationException("Not supported yet.");
+        };
+    }
+
+    /**
+     * U clockwise: cycles the top-layer corners (0,1,2,3) without changing orientation,
+     * Corner positions: 0 URF, 1 UFL, 2 ULB, 3 UBR.
+     * After U: new[0] = old[1], ..., new[3] = old[0].
+     */
+    private CubeState applyUQuarter() {
+        final int[] permU = {1, 2, 3, 0, 4, 5, 6, 7};
+
+        byte[] newCp = new byte[8];
+        byte[] newCo = new byte[8];
+
+        for (int pos = 0; pos < 8; pos++) {
+            int src = permU[pos];
+            newCp[pos] = cp[src];
+            newCo[pos] = co[src]; // orientation unchanged for U
+        }
+
+        return new CubeState(newCp, newCo);
     }
 }
