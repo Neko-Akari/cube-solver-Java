@@ -53,4 +53,14 @@ class MoveTest {
         assertEquals("F2", Move.F2.toString());
         assertEquals("F'", Move.FP.toString());
     }
+
+    @Test
+    void parseWorks() {
+        assertEquals(Move.U, Move.parse("U"));
+        assertEquals(Move.U2, Move.parse("U2"));
+        assertEquals(Move.UP, Move.parse("U'"));
+
+        assertEquals(Move.RP, Move.parse("r'")); // lower-case ok
+        assertEquals(Move.F2, Move.parse("  F2 ")); // whitespace ok
+    }
 }
