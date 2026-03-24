@@ -16,10 +16,9 @@ import static org.junit.jupiter.api.Assumptions.*;
 public class MovePropertiesTest {
 
     @Test
-    void eachFaceTurnAppliedFourTimesReturnsSolved()
-    {
+    void eachFaceTurnAppliedFourTimesReturnsSolved() {
         for (Move.Face face : Move.Face.values()) {
-            //Skip faces not implemented yet
+            // Skip faces not implemented yet
             boolean implemented = true;
             try {
                 CubeState.solved().apply(Move.from(face, 1));
@@ -27,7 +26,7 @@ public class MovePropertiesTest {
             catch (UnsupportedOperationException e) {
                 implemented = false;
             }
-            assumeTrue(implemented, "Face " + face + " not implemented yet.");
+            assumeTrue(implemented, "Face " + face + " not implemented yet");
 
             CubeState s = CubeState.solved();
             for (int i = 0; i < 4; i++) {
@@ -39,17 +38,17 @@ public class MovePropertiesTest {
     }
 
     @Test
-   void moveThenInverseReturnsSolved() {
-        for (Move m: Move.values()) {
+    void moveThenInverseReturnsSolved() {
+        for (Move m : Move.values()) {
             // Skip moves not implemented yet
-            boolean implemeted = true;
+            boolean implemented = true;
             try {
                 CubeState.solved().apply(m);
             }
             catch (UnsupportedOperationException e) {
-                implemeted = false;
+                implemented = false;
             }
-            assumeTrue(implemeted, "Move " + m + " not implemented yet.");
+            assumeTrue(implemented, "Move " + m + " not implemented yet");
 
             CubeState s = CubeState.solved().apply(m).apply(m.inverse());
             assertTrue(s.isSolved(), "Move " + m +
