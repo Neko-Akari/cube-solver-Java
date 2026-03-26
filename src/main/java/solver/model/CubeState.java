@@ -1,20 +1,27 @@
 package solver.model;
 
+import java.util.Arrays;
+
 /**
- * Immutable 2x2 cube state using corner permutation (cp) and corner orientation (co).
+ * Immutable 2×2 cube state using corner permutation (cp) and corner orientation (co).
  *
- * Corner indices (standard cubie model):
+ * <p>Corner indices (standard cubie model):
  * 0 URF, 1 UFL, 2 ULB, 3 UBR, 4 DFR, 5 DLF, 6 DBL, 7 DRB
  *
- * Invariants:
- *  - cp is a permutation of 0..7
- *  - co values are in [0,2] and sum(co) % 3 == 0 (valid cube constraint)
+ * <p>Invariants:
+ * <ul>
+ *   <li>cp is a permutation of {0..7}</li>
+ *   <li>co values are in {0,1,2} and sum(co) % 3 == 0 for valid states</li>
+ * </ul>
+ *
+ * <p>This class is <b>immutable</b>: {@link #apply(Move)} returns a new state and never mutates the original.
  */
 public final class CubeState {
 
-    // cp[pos] = which corner cubie is at position pos
+    // cp[pos] = which corner cubie (0..7) is currently located at position pos
     private final byte[] cp; // length 8
-    // co[pos] = orientation of corner cubie at position pos (0..2)
+
+    // co[pos] = orientation (0..2) of the corner cubie currently located at position pos
     private final byte[] co; // length 8
 
     private CubeState(byte[] cp, byte[] co) {
@@ -22,7 +29,9 @@ public final class CubeState {
         this.co = co;
     }
 
-    /** Returns the solved 2x2 state. */
+    /**
+     * @return the solved 2×2 cube state (identity permutation, all orientations = 0)
+     */
     public static CubeState solved() {
         byte[] cp = new byte[8];
         byte[] co = new byte[8];
@@ -33,7 +42,14 @@ public final class CubeState {
         return new CubeState(cp, co);
     }
 
-    /** Applies a move and returns a new CubeState. */
+    /**
+     * Applies a move and returns the resulting state.
+     *
+     * <p>A move may be a quarter-turn, half-turn, or prime turn depending on {@link Move#turns()}.
+     *
+     * @param move move to apply
+     * @return a new {@link CubeState} after applying {@code move}
+     */
     public CubeState apply(Move move) {
         CubeState s = this;
         for (int i = 0; i < move.turns(); i++) {
@@ -42,7 +58,9 @@ public final class CubeState {
         return s;
     }
 
-    /** Whether this state is solved. */
+    /**
+     * @return true if this state is the solved state (identity permutation and all orientations = 0)
+     */
     public boolean isSolved() {
         for (byte i = 0; i < 8; i++) {
             if (cp[i] != i) return false;
@@ -51,20 +69,26 @@ public final class CubeState {
         return true;
     }
 
-    /** Applies one clockwise quarter-turn of the given face. */
+    /**
+     * Applies one <b>clockwise</b> quarter-turn of the given face.
+     *
+     * @param face face to turn
+     * @return the state after one clockwise quarter-turn
+     * @throws UnsupportedOperationException if the face is not implemented yet
+     */
     private CubeState applyQuarter(Move.Face face) {
         return switch (face) {
             case U -> applyUQuarter();
-            case R, F -> throw new UnsupportedOperationException("Not supported yet.");
+            case R, F -> throw new UnsupportedOperationException(
+                    "applyQuarter(" + face + ") not implemented yet");
         };
     }
 
     /**
-     * U clockwise: cycles the top-layer corners (0,1,2,3) without changing orientation,
-     * Corner positions: 0 URF, 1 UFL, 2 ULB, 3 UBR.
-     * After U: new[0] = old[1], ..., new[3] = old[0].
+     * U clockwise: cycles the top-layer corners (0,1,2,3) and leaves orientations unchanged.
      */
     private CubeState applyUQuarter() {
+        // new[pos] = old[permU[pos]]
         final int[] permU = {1, 2, 3, 0, 4, 5, 6, 7};
 
         byte[] newCp = new byte[8];
@@ -73,9 +97,23 @@ public final class CubeState {
         for (int pos = 0; pos < 8; pos++) {
             int src = permU[pos];
             newCp[pos] = cp[src];
-            newCo[pos] = co[src]; // orientation unchanged for U
+            newCo[pos] = co[src];
         }
 
         return new CubeState(newCp, newCo);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CubeState other)) return false;
+        return Arrays.equals(cp, other.cp) && Arrays.equals(co, other.co);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Arrays.hashCode(cp);
+        result = 31 * result + Arrays.hashCode(co);
+        return result;
     }
 }
